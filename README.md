@@ -60,14 +60,16 @@ The widget answers on its own IPC target, so a lookup can come from a
 keybinding or a script:
 
 ```bash
-omarchy-shell yamz8.npichy lookup "aalbers"                    # opens the panel and searches
-omarchy-shell yamz8.npichy lookup "mayo clinic" organization   # ... as an organization
+omarchy-shell yamz8.npichy lookup "aalbers"                      # opens the panel and searches
+omarchy-shell yamz8.npichy lookupIn "mayo clinic" organization   # ... as an organization
 omarchy-shell yamz8.npichy copy                   # copies the selected NPI, echoes it
 omarchy-shell yamz8.npichy toggle                 # open / close
 ```
 
-`lookup` takes an optional record type (`individual` or `organization`) as its
-second argument. It returns `ok`, or `empty query` when handed nothing. `copy` returns the
+`lookupIn` takes the record type (`individual` or `organization`) as a second
+argument; Quickshell requires every declared IPC parameter, so the one-argument
+form is its own method rather than an optional argument. Both return `ok`, or
+`empty query` when handed nothing. `copy` returns the
 NPI it put on the clipboard, or `no selection`.
 
 ## Omarchy integration

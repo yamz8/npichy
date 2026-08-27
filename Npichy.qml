@@ -51,6 +51,9 @@ Panel {
   property int selectedIndex: 0
   property bool searching: false
   property bool aborting: false
+  // A lookup that arrives while a request is in flight is remembered
+  // rather than dropped, and replayed once that request settles.
+  property bool pendingSearch: false
   property string errorText: ""
   property string copiedNpi: ""
 
@@ -82,8 +85,15 @@ Panel {
 
   function clearSensitiveState() {
     root.aborting = true;
+    root.pendingSearch = false;
     root.stopRequests();
     root.query = "";
+    // The field owns the text once it has been typed in, so clearing the
+    // query alone would leave the panel showing a term it no longer holds -
+    // and a later lookup of that same term would set text to what it already
+    // was, fire no change, and search for nothing.
+    if (searchField)
+      searchField.text = "";
     root.resultsQuery = "";
     root.lastSignature = "";
     root.results = [];
@@ -94,11 +104,24 @@ Panel {
     root.copiedNpi = "";
   }
 
+  // Called wherever a request settles. Replaying through callLater keeps
+  // runSearch off its own call stack.
+  function replayPendingSearch() {
+    if (!root.pendingSearch)
+      return;
+
+    root.pendingSearch = false;
+    Qt.callLater(function () {
+      root.runSearch();
+    });
+  }
+
   function failWith(message) {
     root.searching = false;
     root.results = [];
     root.totalCount = 0;
     root.errorText = message;
+    root.replayPendingSearch();
   }
 
   // curl is capped twice over. --max-filesize stops the transfer at the limit
@@ -127,9 +150,10 @@ Panel {
       searchField.forceActiveFocus();
       return;
     }
-    if (root.searching)
+    if (root.searching) {
+      root.pendingSearch = true;
       return;
-
+    }
     root.aborting = false;
     root.searching = true;
     root.errorText = "";
@@ -170,6 +194,7 @@ Panel {
     root.selectedIndex = 0;
     root.searching = false;
     root.errorText = parsed.providers.length === 0 ? "No provider matched — try fewer letters, a different state, or the other record type" : "";
+    root.replayPendingSearch();
   }
 
   function networkError(exitCode) {
@@ -230,6 +255,25 @@ Panel {
   function openRegistry() {
     Quickshell.execDetached(["omarchy-launch-browser", NPI.REGISTRY_URL]);
     root.close();
+  }
+
+  // Shared by the lookup IPC methods. The text is written to the field rather
+  // than to root.query, because the field owns the query once it has been
+  // typed in and would otherwise keep showing the previous term.
+  function startLookup(query, mode) {
+    var normalized = String(query || "").trim();
+    if (normalized === "")
+      return "empty query";
+
+    root.open();
+    if (String(mode || "").trim() !== "") {
+      root.searchType = String(mode).toLowerCase() === "organization" ? "organization" : "individual";
+    }
+    searchField.text = normalized;
+    Qt.callLater(function () {
+      root.runSearch();
+    });
+    return "ok";
   }
 
   function handleKey(event) {
@@ -293,23 +337,17 @@ Panel {
     // The text is written to the field rather than to root.query, because the
     // field owns the query once it has been typed in and would otherwise keep
     // showing the previous term.
-    // The optional second argument picks the record type, so a keybinding can
-    // go straight to organizations:
-    //   omarchy-shell yamz8.npichy lookup "mayo clinic" organization
-    function lookup(query: string, type: string): string {
-      var normalized = String(query || "").trim();
-      if (normalized === "")
-        return "empty query";
-
-      root.open();
-      if (String(type || "").trim() !== "")
-        root.searchType = String(type).toLowerCase() === "organization" ? "organization" : "individual";
-
-      searchField.text = normalized;
-      Qt.callLater(function () {
-        root.runSearch();
-      });
-      return "ok";
+    // Quickshell requires every declared IPC parameter, so the one-argument
+    // form lives in its own function rather than taking an optional second
+    // argument that callers would then always have to supply.
+    //   omarchy-shell yamz8.npichy lookup "aalbers"
+    function lookup(query: string): string {
+      return root.startLookup(query, "");
+    }
+    // Same, but picking the type up front:
+    //   omarchy-shell yamz8.npichy lookupIn "mayo clinic" organization
+    function lookupIn(query: string, type: string): string {
+      return root.startLookup(query, type);
     }
     // Copy whatever is selected, so a keybinding can pair with lookup to put
     // the closest NPI on the clipboard without touching the panel.
