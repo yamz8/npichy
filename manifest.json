@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "id": "yamz8.npichy",
+  "name": "npichy",
+  "version": "1.0.0",
+  "author": "yamz8",
+  "license": "MIT",
+  "description": "Look up healthcare providers in the NPI registry from the Omarchy bar",
+  "kinds": [
+    "bar-widget"
+  ],
+  "entryPoints": {
+    "barWidget": "Npichy.qml"
+  },
+  "barWidget": {
+    "displayName": "npichy",
+    "description": "Search the NPPES registry by name, organization, or NPI number",
+    "category": "Science",
+    "defaultSection": "right",
+    "allowMultiple": false,
+    "defaults": {
+      "defaultType": "individual",
+      "defaultState": "",
+      "resultLimit": 8
+    },
+    "schema": [
+      {
+        "key": "defaultType",
+        "type": "enum",
+        "label": "Record type searched first",
+        "options": [
+          "individual",
+          "organization"
+        ],
+        "defaultValue": "individual"
+      },
+      {
+        "key": "defaultState",
+        "type": "string",
+        "label": "Default state filter (two letters, blank for all)",
+        "defaultValue": ""
+      },
+      {
+        "key": "resultLimit",
+        "type": "integer",
+        "label": "Results shown",
+        "min": 5,
+        "max": 12,
+        "step": 1,
+        "defaultValue": 8
+      }
+    ]
+  }
+}
