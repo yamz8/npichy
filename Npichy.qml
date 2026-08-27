@@ -293,12 +293,18 @@ Panel {
     // The text is written to the field rather than to root.query, because the
     // field owns the query once it has been typed in and would otherwise keep
     // showing the previous term.
-    function lookup(query: string): string {
+    // The optional second argument picks the record type, so a keybinding can
+    // go straight to organizations:
+    //   omarchy-shell yamz8.npichy lookup "mayo clinic" organization
+    function lookup(query: string, type: string): string {
       var normalized = String(query || "").trim();
       if (normalized === "")
         return "empty query";
 
       root.open();
+      if (String(type || "").trim() !== "")
+        root.searchType = String(type).toLowerCase() === "organization" ? "organization" : "individual";
+
       searchField.text = normalized;
       Qt.callLater(function () {
         root.runSearch();

@@ -60,12 +60,14 @@ The widget answers on its own IPC target, so a lookup can come from a
 keybinding or a script:
 
 ```bash
-omarchy-shell yamz8.npichy lookup "mayo clinic"   # opens the panel and searches
+omarchy-shell yamz8.npichy lookup "aalbers"                    # opens the panel and searches
+omarchy-shell yamz8.npichy lookup "mayo clinic" organization   # ... as an organization
 omarchy-shell yamz8.npichy copy                   # copies the selected NPI, echoes it
 omarchy-shell yamz8.npichy toggle                 # open / close
 ```
 
-`lookup` returns `ok`, or `empty query` when handed nothing. `copy` returns the
+`lookup` takes an optional record type (`individual` or `organization`) as its
+second argument. It returns `ok`, or `empty query` when handed nothing. `copy` returns the
 NPI it put on the clipboard, or `no selection`.
 
 ## Omarchy integration

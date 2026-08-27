@@ -12,6 +12,6 @@
   enumeration warning per result.
 - Surface the former or other name that a search matched on.
 - Add `lookup` and `copy` IPC methods so a keybinding or script can drive the
-  widget.
+  widget; `lookup` takes an optional record type as its second argument.
 - Add native Omarchy components and a theme-aware Nerd Font bar icon.
 - Clear query and results on close and show public-registry guidance.
