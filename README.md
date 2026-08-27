@@ -100,18 +100,69 @@ record numbers, or other personal identifiers.
 ## Install
 
 ```bash
-omarchy plugin add https://github.com/yamz8/npichy
+omarchy plugin add https://github.com/yamz8/npichy.git --enable
 ```
 
-## Development
+`omarchy plugin add` clones the repository, validates the manifest, and installs
+it as `yamz8.npichy`. Update later with `omarchy plugin update yamz8.npichy`.
+
+## Install from a local checkout
 
 ```bash
-node --test tests/npi.test.mjs
-omarchy plugin validate .
+cp -R ./npichy ~/.config/omarchy/plugins/yamz8.npichy
+omarchy plugin validate ~/.config/omarchy/plugins/yamz8.npichy
+omarchy plugin enable yamz8.npichy
 ```
 
-All URL building and response parsing lives in `NPI.js` so it can be tested
-outside QML.
+Plugin files hot reload. If the widget does not appear immediately, run:
+
+```bash
+omarchy-shell shell rescanPlugins
+```
+
+## Remove
+
+```bash
+omarchy plugin disable yamz8.npichy
+omarchy plugin remove yamz8.npichy
+```
+
+Removing the plugin takes the widget out of the bar and deletes
+`~/.config/omarchy/plugins/yamz8.npichy`. The plugin writes nothing outside that
+folder and never modifies your Omarchy configuration, so nothing is left behind.
+
+## Use
+
+- Left-click the account-search icon to open the provider finder.
+- Right-click it to open the NPI registry search page.
+- Press `Enter` to search, then `Enter` again to copy the selected NPI.
+- Press `Ctrl+Enter` to open the record in the browser.
+- Press `Up`/`Down` to choose a result, `Esc` to close, or `Tab` to switch
+  bar panels.
+
+The bar editor exposes every setting below. For example:
+
+```bash
+omarchy bar set yamz8.npichy defaultType organization
+omarchy bar set yamz8.npichy defaultState CA
+omarchy bar set yamz8.npichy resultLimit 10
+```
+
+## Validate
+
+```bash
+omarchy plugin validate .
+node --test tests/npi.test.mjs
+/usr/lib/qt6/bin/qmlformat Npichy.qml >/dev/null
+```
+
+## Data source
+
+- [NPPES NPI Registry API](https://npiregistry.cms.hhs.gov/api-page)
+- [NPI registry search](https://npiregistry.cms.hhs.gov/search)
+
+NPPES is a public registry of healthcare *providers*, published by the U.S.
+Centers for Medicare & Medicaid Services. No API key is required.
 
 ## License
 
