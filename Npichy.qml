@@ -418,7 +418,6 @@ Panel {
         width: parent.width
         title: "npichy"
         meta: "NPPES national provider identifier registry"
-        detail: "LIVE"
         foreground: root.foreground
         fontFamily: root.fontFamily
 
